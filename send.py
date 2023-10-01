@@ -81,3 +81,9 @@ if __name__ == "__main__":
                 # Process the file
                 path_file = file.absolute()
                 send_file(path_file)
+
+    else:
+        print("Incorrect Command - You have these options:\n")
+        print("python3 send.py -f [file_path]")
+        print("python3 send.py -d [dir_path ]")
+        exit(-1)

@@ -6,7 +6,7 @@ def recv_all(client_socket, end_str):
     end_bytes = end_str.encode()
 
     while True:
-        data = client_socket.recv(50000)
+        data = client_socket.recv(1024)
 
         if not data:
             print('connection closed')
@@ -30,49 +30,49 @@ def check_file_name(file_name):
         return file_name
 
 
-HOST = "0.0.0.0"
-PORT = 9000
 
-# Create a socket server
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((HOST, PORT))
-server_socket.listen(1)
+if __name__ == "__main__":
+    HOST = "0.0.0.0"
+    PORT = 9000
 
-print("Server is listening...")
+    # Create a socket server
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((HOST, PORT))
+    server_socket.listen(1)
 
-while True:
-    
-    # Accept a client connection
-    client_socket, client_address = server_socket.accept()
-    print(f"Connection from {client_address}")
+    print("Server is listening...")
 
-    file_name = recv_all(client_socket, "\n\nEND_NAME\n\n").decode()
-    client_socket.sendall("OK".encode())
-    client_socket.sendall("\n\nEND\n\n".encode())
+    while True:
+        # Accept a client connection
+        client_socket, client_address = server_socket.accept()
+        print(f"Connection from {client_address}")
 
-    pdf_data = b''
-    end_bytes = '\n\nEND_FILE\n\n'.encode()
+        file_name = recv_all(client_socket, "\n\nEND_NAME\n\n").decode()
+        client_socket.sendall("OK".encode())
+        client_socket.sendall("\n\nEND\n\n".encode())
 
-    print(file_name)
-    new_name = check_file_name(file_name)
+        pdf_data = b''
+        end_bytes = '\n\nEND_FILE\n\n'.encode()
 
-    with open(new_name, 'wb') as received_file:
-        while True:
-            pdf_data = client_socket.recv(10000)
+        print(file_name)
+        new_name = check_file_name(file_name)
 
-            if not pdf_data:
-                print('connection closed')
-                break
+        with open(new_name, 'wb') as received_file:
+            while True:
+                pdf_data = client_socket.recv(10000)
 
-            if pdf_data.endswith(end_bytes):
-                pdf_data = pdf_data[:-len(end_bytes)]
+                if not pdf_data:
+                    print('connection closed')
+                    break
+
+                if pdf_data.endswith(end_bytes):
+                    pdf_data = pdf_data[:-len(end_bytes)]
+                    received_file.write(pdf_data)
+                    break
+
                 received_file.write(pdf_data)
-                break
 
-            received_file.write(pdf_data)
+        client_socket.sendall("OK".encode())
+        client_socket.sendall("\n\nEND\n\n".encode())
 
-    client_socket.sendall("OK".encode())
-    client_socket.sendall("\n\nEND\n\n".encode())
-
-    # Close the sockets
-    client_socket.close()
+        client_socket.close()
