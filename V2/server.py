@@ -64,19 +64,15 @@ def handle_client(client_socket, address):
                                     transmit = False
                 case 'erm':
                     print(f'[{address}] Enter in erm mode')
-                    
+                    clients[client_socket] = 'erm'
                     while True:
                         # recv q or enter
-                        clients[client_socket] = 'start'
-                        command = recv_all(client_socket).decode()
-                        if not command or command == 'q':
+                        message = recv_all(client_socket).decode()
+                        if not message or message == 'q':
                             clients[client_socket] = 'start'
                             print(f'[{address}] Exit from erm mode')
                             break
-                        elif command == 'OK':
-                            clients[client_socket] = 'erm'
 
-                        message = recv_all(client_socket).decode()
                         if message == 'OK':
                             transmit = True
                         else:

@@ -84,9 +84,6 @@ if __name__ == "__main__":
                         client_socket.sendall('q'.encode())
                         client_socket.sendall(end_ok.encode())
                         break
-                    else:
-                        client_socket.sendall('OK'.encode())
-                        client_socket.sendall(end_ok.encode())
 
                     print('---- Recv Mode Active ----')
 
