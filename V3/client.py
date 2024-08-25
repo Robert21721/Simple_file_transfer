@@ -59,26 +59,27 @@ if __name__ == "__main__":
                 print(command_list)
 
             case 'enter send mode' | 'esm':
-                client_socket.sendall('esm'.encode())
-                client_socket.sendall(end_ok.encode())
-
                 while True:
                     message = input('Enter file path or q to exit send mode: ')
 
                     if message == 'quit' or message == 'q':
-                        client_socket.sendall('q'.encode())
-                        client_socket.sendall(end_ok.encode())
                         break
+                    else:
+                        client_socket.sendall('esm'.encode())
+                        client_socket.sendall(end_ok.encode())
+
+                        code = recv_all(client_socket).decode()
+                        if code != 'OK':
+                            break
 
                     print('---- Send Mode Active ----')
                     
                     send_file(message)
             
             case 'enter recv mode' | 'erm':
-                client_socket.sendall('erm'.encode())
-                client_socket.sendall(end_ok.encode())
-
                 while True:
+                    client_socket.sendall('erm'.encode())
+                    client_socket.sendall(end_ok.encode())
                     print('---- Recv Mode Active ----')
 
                     file_name = recv_all(client_socket).decode()

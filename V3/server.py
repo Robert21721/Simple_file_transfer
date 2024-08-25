@@ -15,6 +15,7 @@ def handle_client(client_socket, address):
     
     while True:
         try:
+            clients[client_socket] = 'start'
             # Receiving messages from the client
             message = recv_all(client_socket)
             if not message:
@@ -27,56 +28,57 @@ def handle_client(client_socket, address):
                 case 'esm':
                     print(f'[{address}] Enter in esm mode')
                     clients[client_socket] = 'esm'
-                    while True:
+                    client_socket.sendall('OK'.encode())
+                    client_socket.sendall(end_ok.encode())
+                    # while True:
                         # recv file name
-                        message = recv_all(client_socket).decode()
-                        if not message or message == 'quit' or message == 'q':
-                            print(f'[{address}] Exit from esm mode')
-                            clients[client_socket] = 'start'
-                            break
-                        
-                        file_name = message
-                        print(f"[{address}] File Name: {file_name}")
+                    file_name = recv_all(client_socket).decode()
+                    if not file_name:
+                        clients[client_socket] = 'start'
+                        break
 
-                        # response to file name
-                        client_socket.sendall("OK".encode())
-                        client_socket.sendall(end_ok.encode())
+                    print(f"[{address}] File Name: {file_name}")
 
-                        print(f"[{address}] Recv data for {file_name}")
-                        file_data = recv_all(client_socket)
+                    # response to file name
+                    client_socket.sendall("OK".encode())
+                    client_socket.sendall(end_ok.encode())
 
-                        client_socket.sendall("OK".encode())
-                        client_socket.sendall(end_ok.encode())
-                        print(f"[{address}] Recv ended for {file_name}")
+                    print(f"[{address}] Recv data for {file_name}")
+                    file_data = recv_all(client_socket)
 
-                        for cl_sock in clients.keys():
-                            if client_socket != cl_sock and clients[cl_sock] == 'erm':
-                                print(f"[{address}] Sending to client {cl_sock}")
-                                cl_sock.sendall(file_name.encode())
-                                cl_sock.sendall(end_name.encode())
+                    client_socket.sendall("OK".encode())
+                    client_socket.sendall(end_ok.encode())
+                    print(f"[{address}] Recv ended for {file_name}")
 
-                                sem.acquire()
+                    for cl_sock in clients.keys():
+                        if client_socket != cl_sock and clients[cl_sock] == 'erm':
+                            print(f"[{address}] Sending to client {cl_sock}")
+                            cl_sock.sendall(file_name.encode())
+                            cl_sock.sendall(end_name.encode())
 
-                                if transmit == True:
-                                    print(f'Client {cl_sock} accepted')
-                                    cl_sock.sendall(file_data)
-                                    cl_sock.sendall(end_file.encode())
-                                    transmit = False
+                            sem.acquire()
+
+                            if transmit == True:
+                                print(f'Client {cl_sock} accepted')
+                                cl_sock.sendall(file_data)
+                                cl_sock.sendall(end_file.encode())
+                                transmit = False
                 case 'erm':
                     print(f'[{address}] Enter in erm mode')
                     clients[client_socket] = 'erm'
-                    while True:
-                        # recv q or enter
-                        message = recv_all(client_socket).decode()
-                        if not message:
-                            break
+                    # while True:
 
-                        if message == 'OK':
-                            transmit = True
-                        else:
-                            transmit = False
+                    message = recv_all(client_socket).decode()
+                    if not message:
+                        clients[client_socket] = 'start'
+                        break
 
-                        sem.release()
+                    if message == 'OK':
+                        transmit = True
+                    else:
+                        transmit = False
+
+                    sem.release()
                     
         except Exception as e:
             print(e)
