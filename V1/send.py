@@ -5,7 +5,7 @@ from pathlib import Path
 
 def send_file(path):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(('82.210.153.205', 9000))
+    client_socket.connect(('92.180.8.26', 9000))
 
     file_name = os.path.basename(path)
 
